@@ -6,6 +6,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -17,6 +18,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
@@ -48,9 +51,11 @@ import com.jaquadro.minecraft.storagedrawers.core.ModItems;
 import com.jaquadro.minecraft.storagedrawers.inventory.ISideManager;
 import com.jaquadro.minecraft.storagedrawers.inventory.StorageInventory;
 import com.jaquadro.minecraft.storagedrawers.network.CountUpdateMessage;
+import com.jaquadro.minecraft.storagedrawers.security.SecurityManager;
 import com.jaquadro.minecraft.storagedrawers.storage.IUpgradeProvider;
 
 import cpw.mods.fml.common.FMLLog;
+import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import it.unimi.dsi.fastutil.ints.IntIterators;
@@ -63,6 +68,7 @@ public abstract class TileEntityDrawers extends BaseTileEntity
     protected IDrawerInventory inventory;
 
     private int direction;
+    private int rotation;
     private int drawerCapacity = 1;
     private boolean shrouded = false;
     private boolean quantified = false;
@@ -177,6 +183,14 @@ public abstract class TileEntityDrawers extends BaseTileEntity
 
     public void setDirection(int direction) {
         this.direction = direction % 6;
+    }
+
+    public int getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(int rotation) {
+        this.rotation = ((rotation % 4) + 4) % 4;
     }
 
     public int getMaxStorageLevel() {
@@ -459,12 +473,28 @@ public abstract class TileEntityDrawers extends BaseTileEntity
     @Override
     public void onBlockClicked(EntityPlayer player, int face, float hitX, float hitY, float hitZ, boolean invertShift,
             boolean isHoldingClick) {
-        if (getDirection() != face) {
+        double reachDistance = ((EntityPlayerMP) player).theItemInWorldManager.getBlockReachDistance() + 1;
+        reachDistance *= reachDistance;
+        if (getDirection() != face || !(hitX >= 0 && hitX <= 1 && hitY >= 0 && hitY <= 1 && hitZ >= 0 && hitZ <= 1)
+                || player.getDistanceSq(xCoord + 0.5, yCoord - 1.0, zCoord + 0.5) > reachDistance
+                || !SecurityManager.hasAccess(player.getGameProfile(), this)) {
+            return;
+        }
+
+        PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(
+                player,
+                PlayerInteractEvent.Action.LEFT_CLICK_BLOCK,
+                xCoord,
+                yCoord,
+                zCoord,
+                face,
+                worldObj);
+        if (event.isCanceled() || event.useBlock == Event.Result.DENY) {
             return;
         }
 
         BlockDrawers block = (BlockDrawers) worldObj.getBlock(xCoord, yCoord, zCoord);
-        int slot = block.getDrawerSlot(face, hitX, hitY, hitZ);
+        int slot = block.getDrawerSlot(face, getRotation(), hitX, hitY, hitZ);
 
         IDrawer drawer = getDrawer(slot);
         if (drawer == null) {
@@ -838,6 +868,7 @@ public abstract class TileEntityDrawers extends BaseTileEntity
         super.readFromFixedNBT(tag);
 
         setDirection(tag.getByte("Dir"));
+        rotation = tag.hasKey("Rot") ? tag.getByte("Rot") : 0;
 
         taped = false;
         if (tag.hasKey("Tape")) taped = tag.getBoolean("Tape");
@@ -863,6 +894,7 @@ public abstract class TileEntityDrawers extends BaseTileEntity
         super.writeToFixedNBT(tag);
 
         tag.setByte("Dir", (byte) direction);
+        if (rotation != 0) tag.setByte("Rot", (byte) rotation);
 
         if (taped) tag.setBoolean("Tape", taped);
 

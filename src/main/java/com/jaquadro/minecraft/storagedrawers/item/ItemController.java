@@ -10,6 +10,7 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
 import com.jaquadro.minecraft.storagedrawers.block.tile.TileEntityController;
+import com.jaquadro.minecraft.storagedrawers.util.DrawerOrientation;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -26,8 +27,11 @@ public class ItemController extends ItemBlock {
         if (!super.placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, metadata)) return false;
 
         TileEntityController tile = (TileEntityController) world.getTileEntity(x, y, z);
+          
         if (tile != null && !player.isSneaking()) {
-            if (side > 1) tile.setDirection(side);
+            DrawerOrientation orientation = DrawerOrientation.forEntity(player);
+            tile.setDirection(orientation.direction());
+            tile.setRotation(orientation.rotation());
         }
 
         return true;

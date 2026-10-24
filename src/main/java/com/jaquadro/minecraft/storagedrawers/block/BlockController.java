@@ -13,7 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IIcon;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -217,9 +216,8 @@ public class BlockController extends BlockContainer implements INetworked {
 
         if (tile.getDirection() == axis.ordinal()) return false;
 
-        if (axis == ForgeDirection.UP || axis == ForgeDirection.DOWN) return false;
-
         tile.setDirection(axis.ordinal());
+        tile.setRotation(0);
         world.markBlockForUpdate(x, y, z);
 
         return true;

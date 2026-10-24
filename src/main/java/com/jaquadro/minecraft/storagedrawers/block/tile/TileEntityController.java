@@ -118,6 +118,8 @@ public class TileEntityController extends TileEntity
     private int direction;
     private final int range;
     private final int maxDrawers;
+    
+    private int rotation;
 
     private int drawersCount;
 
@@ -144,7 +146,16 @@ public class TileEntityController extends TileEntity
         this.direction = direction % 6;
     }
 
-    public void interactPutItemsIntoInventory(EntityPlayer player) {
+    public int getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(int rotation) {
+        this.rotation = ((rotation % 4) + 4) % 4;
+    }
+
+    public int interactPutItemsIntoInventory(EntityPlayer player) {
+        if (inventorySlots.length == 0) updateCache();
 
         boolean dumpInventory = worldObj.getTotalWorldTime() - lastClickTime < 10
                 && player.getPersistentID().equals(lastClickUUID);
@@ -702,6 +713,7 @@ public class TileEntityController extends TileEntity
         super.readFromNBT(tag);
 
         setDirection(tag.getByte("Dir"));
+        rotation = tag.hasKey("Rot") ? tag.getByte("Rot") : 0;
 
         if (tag.hasKey("CustomName", Constants.NBT.TAG_STRING)) customName = tag.getString("CustomName");
 
@@ -722,6 +734,7 @@ public class TileEntityController extends TileEntity
         super.writeToNBT(tag);
 
         tag.setByte("Dir", (byte) direction);
+        if (rotation != 0) tag.setByte("Rot", (byte) rotation);
 
         if (hasCustomInventoryName()) tag.setString("CustomName", customName);
 
@@ -987,6 +1000,11 @@ public class TileEntityController extends TileEntity
                 }
             }
         }
+    @Override
+    public boolean isUseableByPlayer(EntityPlayer player) {
+        if (worldObj.getTileEntity(xCoord, yCoord, zCoord) != this) return false;
+
+        return player.getDistanceSq(xCoord + .5, yCoord + .5, zCoord + .5) <= 64;
     }
 
     @Override

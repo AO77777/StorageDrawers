@@ -401,12 +401,13 @@ public class BlockDrawers extends BlockContainer implements INetworked {
 
         int slot = getDrawerSlot(side, tileDrawers.getRotation(), hitX, hitY, hitZ);
         IDrawer drawer = tileDrawers.getDrawer(slot);
+
         if (drawer != null) {
-            ItemStack currentStack = drawer.getStoredItemPrototype();
 
-        if (!world.isRemote) tileDrawers.interactPutItemsIntoSlot(slot, player);
-
-        return true;
+            if (!world.isRemote) tileDrawers.interactPutItemsIntoSlot(slot, player);
+            return true;
+        }
+        return false;
     }
 
     private boolean useKey(TileEntityDrawers tileDrawers, EntityPlayer player, ItemStack item, int side, float hitX,

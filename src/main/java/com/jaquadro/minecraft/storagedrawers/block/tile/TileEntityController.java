@@ -118,7 +118,7 @@ public class TileEntityController extends TileEntity
     private int direction;
     private final int range;
     private final int maxDrawers;
-    
+
     private int rotation;
 
     private int drawersCount;
@@ -154,8 +154,7 @@ public class TileEntityController extends TileEntity
         this.rotation = ((rotation % 4) + 4) % 4;
     }
 
-    public int interactPutItemsIntoInventory(EntityPlayer player) {
-        if (inventorySlots.length == 0) updateCache();
+    public void interactPutItemsIntoInventory(EntityPlayer player) {
 
         boolean dumpInventory = worldObj.getTotalWorldTime() - lastClickTime < 10
                 && player.getPersistentID().equals(lastClickUUID);
@@ -1000,6 +999,8 @@ public class TileEntityController extends TileEntity
                 }
             }
         }
+    }
+
     @Override
     public boolean isUseableByPlayer(EntityPlayer player) {
         if (worldObj.getTileEntity(xCoord, yCoord, zCoord) != this) return false;
@@ -1222,11 +1223,6 @@ public class TileEntityController extends TileEntity
     @Override
     public int getInventoryStackLimit() {
         return 64;
-    }
-
-    @Override
-    public boolean isUseableByPlayer(EntityPlayer player) {
-        return false;
     }
 
     @Override

@@ -53,16 +53,16 @@ public class ItemDrawers extends ItemBlock {
             if (stack.hasTagCompound() && stack.getTagCompound().hasKey("tile"))
                 tile.readFromPortableNBT(stack.getTagCompound().getCompoundTag("tile"));
 
-            if (!player.isSneaking()){
-              DrawerOrientation orientation = DrawerOrientation.forEntity(player);
-              tile.setDirection(orientation.direction());
-              tile.setRotation(orientation.rotation());
-            }
+            DrawerOrientation orientation = DrawerOrientation.forEntity(player);
+            tile.setDirection(orientation.direction());
+            tile.setRotation(orientation.rotation());
 
             tile.setIsSealed(false);
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     @Override

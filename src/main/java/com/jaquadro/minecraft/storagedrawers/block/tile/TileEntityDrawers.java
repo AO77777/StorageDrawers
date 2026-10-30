@@ -93,6 +93,7 @@ public abstract class TileEntityDrawers extends BaseTileEntity
     private ItemStack materialTrim;
 
     private boolean isFirstTick = true;
+    private boolean syncClient = true;
     protected TileEntityController controller = null;
     protected BlockCoord controllerCoord = null;
 
@@ -134,16 +135,17 @@ public abstract class TileEntityDrawers extends BaseTileEntity
         if (controllerCoord == null || controllerCoord.x() != sourceControllerX
                 || controllerCoord.y() != sourceControllerY
                 || controllerCoord.z() != sourceControllerZ) {
+            return;
+        }
 
-            for (IDrawer drawer : drawers) {
-                drawer.clearTileEntityController();
-            }
+        for (IDrawer drawer : drawers) {
+            drawer.clearTileEntityController();
+        }
 
-            if (nullController) {
-                controllerCoord = null;
-                controller = null;
-                markDirty();
-            }
+        if (nullController) {
+            controllerCoord = null;
+            controller = null;
+            markDirty();
         }
     }
 
@@ -156,6 +158,31 @@ public abstract class TileEntityDrawers extends BaseTileEntity
         if (controller != null && !controller.isInvalid()) {
             controller.schedulePriorityUpdate();
         }
+    }
+
+    /**
+     * Toggle/set Sync with client/server
+     */
+    @Override
+    public void toggleSync() {
+        syncClient = !syncClient;
+        for (IDrawer drawer : drawers) {
+            drawer.setSync(syncClient);
+        }
+        markDirty();
+    }
+
+    @Override
+    public void setSync(boolean sync) {
+        syncClient = sync;
+        for (IDrawer drawer : drawers) {
+            drawer.setSync(syncClient);
+        }
+        markDirty();
+    }
+
+    public boolean getClientAutoSync() {
+        return syncClient;
     }
 
     protected TileEntityDrawers(int drawerCount) {
@@ -504,8 +531,13 @@ public abstract class TileEntityDrawers extends BaseTileEntity
         int amount = getTakeAmount(player, invertShift, drawer);
         ItemStack item = takeItemsFromSlot(slot, amount, player, isHoldingClick);
 
-        if (controller != null && !controller.isInvalid() && !controller.getClientAutoSync()) {
-            controller.syncClient();
+        if (!getClientAutoSync()) {
+            if (controller != null) {
+                controller.addClientSyncList(xCoord, yCoord, zCoord);
+                controller.syncClient();
+            } else {
+                worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+            }
         }
 
         traceItem(item);
@@ -844,11 +876,15 @@ public abstract class TileEntityDrawers extends BaseTileEntity
         // Sync with client
         if (drawer != null) {
 
-            if (controller != null && !controller.isInvalid() && !controller.getClientAutoSync()) {
-                controller.syncClient();
+            if (!getClientAutoSync()) {
+                if (controller != null) {
+                    controller.addClientSyncList(xCoord, yCoord, zCoord);
+                    controller.syncClient();
+                } else {
+                    worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+                }
             } else {
-                ItemStack currentStack = drawer.getStoredItemPrototype();
-                if (count > 0 && currentStack != null) worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+                worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
             }
 
         }
@@ -878,6 +914,9 @@ public abstract class TileEntityDrawers extends BaseTileEntity
 
         downgraded = tag.hasKey("Down") && tag.getBoolean("Down");
 
+        syncClient = true;
+        if (tag.hasKey("Sync")) syncClient = tag.getBoolean("Sync");
+
         controllerCoord = null;
         if (tag.hasKey("controllerCoords", Constants.NBT.TAG_COMPOUND)) {
             NBTTagCompound ctag = tag.getCompoundTag("controllerCoords");
@@ -896,11 +935,16 @@ public abstract class TileEntityDrawers extends BaseTileEntity
         tag.setByte("Dir", (byte) direction);
         if (rotation != 0) tag.setByte("Rot", (byte) rotation);
 
-        if (taped) tag.setBoolean("Tape", taped);
+        tag.setBoolean("Tape", taped);
 
         if (hasCustomInventoryName()) tag.setString("CustomName", customName);
 
         if (checkDowngraded()) tag.setBoolean("Down", downgraded);
+
+        tag.setBoolean("Sync", syncClient);
+        for (IDrawer drawer : drawers) {
+            drawer.setSync(syncClient);
+        }
 
         if (controllerCoord != null) {
             NBTTagCompound ctag = new NBTTagCompound();

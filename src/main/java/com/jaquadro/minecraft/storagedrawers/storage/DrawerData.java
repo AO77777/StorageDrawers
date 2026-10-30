@@ -94,33 +94,34 @@ public class DrawerData extends BaseDrawerData implements IVoidable, IShroudable
 
             removeLookupController();
 
-            boolean amountDirty = protoStack == null;
-
             protoStack = nullStack;
             inventoryStack.reset();
 
-            setStoredItemCount(0, false, true, amountDirty);
+            setStoredItemCount(0, false, true, false);
 
             DrawerPopulatedEvent event = new DrawerPopulatedEvent(this);
             MinecraftForge.EVENT_BUS.post(event);
+        } else {
 
-            return;
+            boolean amountDirty;
+            if (protoStack == nullStack) amountDirty = false;
+            else {
+                amountDirty = (!itemPrototype.isItemEqual(protoStack)
+                        || !ItemStack.areItemStackTagsEqual(itemPrototype, protoStack));
+            }
+
+            protoStack = itemPrototype.copy();
+            protoStack.stackSize = 1;
+            inventoryStack.reset();
+            refreshOreDictMatches();
+
+            setLookupController(protoStack);
+
+            setStoredItemCount(amount, mark, false, amountDirty);
+
+            DrawerPopulatedEvent event = new DrawerPopulatedEvent(this);
+            MinecraftForge.EVENT_BUS.post(event);
         }
-
-        boolean amountDirty = (protoStack == null || !itemPrototype.isItemEqual(protoStack)
-                || !ItemStack.areItemStackTagsEqual(itemPrototype, protoStack));
-
-        protoStack = itemPrototype.copy();
-        protoStack.stackSize = 1;
-        inventoryStack.reset();
-        refreshOreDictMatches();
-
-        setLookupController(protoStack);
-
-        setStoredItemCount(amount, mark, false, amountDirty);
-
-        DrawerPopulatedEvent event = new DrawerPopulatedEvent(this);
-        MinecraftForge.EVENT_BUS.post(event);
     }
 
     @Override
@@ -149,9 +150,13 @@ public class DrawerData extends BaseDrawerData implements IVoidable, IShroudable
         }
         if (mark) {
             if (amountDirty) {
-                storageProvider.markAmountDirty(slot, controller);
+                storageProvider.markAmountDirty(slot, syncClient);
             } else {
-                storageProvider.markDirty(controller);
+                storageProvider.markDirty(syncClient);
+            }
+
+            if (controller != null && !syncClient) {
+                storageProvider.addControllerClientSyncList(controller);
             }
         }
     }

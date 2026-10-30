@@ -37,6 +37,7 @@ public abstract class BaseDrawerData implements IDrawer, IInventoryAdapter {
      */
     protected int controllerDrawerSlot = -1;
     protected TileEntityController controller = null;
+    protected boolean syncClient = true;
 
     public List<ItemStack> getOreDictMatches() {
         return oreDictMatches;
@@ -48,6 +49,13 @@ public abstract class BaseDrawerData implements IDrawer, IInventoryAdapter {
 
     public int getControllerDrawerSlot() {
         return controllerDrawerSlot;
+    }
+
+    /**
+     * Changed by the tile entity when loading and when interacting with side
+     */
+    public void setSync(boolean sync) {
+        syncClient = sync;
     }
 
     public void setTileEntityController(TileEntityController controller, int controllerDrawerSlot) {

@@ -28,6 +28,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
@@ -389,6 +390,22 @@ public class BlockDrawers extends BlockContainer implements INetworked {
             if (tileDrawers.isSealed()) {
                 tileDrawers.setIsSealed(false);
                 return true;
+            }
+
+            else if (tileDrawers.getDirection() != side) {
+
+                if (!world.isRemote) {
+                    tileDrawers.toggleSync();
+                    if (tileDrawers.getClientAutoSync()) {
+                        player.addChatMessage(new ChatComponentText("Client Auto Sync Enabled"));
+                        world.markBlockForUpdate(tileDrawers.xCoord, tileDrawers.yCoord, tileDrawers.zCoord);
+                    } else {
+                        player.addChatMessage(new ChatComponentText("Client Auto Sync Disabled"));
+                        world.markBlockForUpdate(tileDrawers.xCoord, tileDrawers.yCoord, tileDrawers.zCoord);
+                    }
+                }
+
+                return true;
             } else if (StorageDrawers.config.cache.enableDrawerUI) {
                 player.openGui(StorageDrawers.instance, GuiHandler.drawersGuiID, world, x, y, z);
                 return true;
@@ -396,14 +413,12 @@ public class BlockDrawers extends BlockContainer implements INetworked {
         }
 
         if (tileDrawers.getDirection() != side) return false;
-
         if (tileDrawers.isSealed()) return false;
 
         int slot = getDrawerSlot(side, tileDrawers.getRotation(), hitX, hitY, hitZ);
         IDrawer drawer = tileDrawers.getDrawer(slot);
 
         if (drawer != null) {
-
             if (!world.isRemote) tileDrawers.interactPutItemsIntoSlot(slot, player);
             return true;
         }

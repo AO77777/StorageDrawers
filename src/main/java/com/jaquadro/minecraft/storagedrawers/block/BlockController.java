@@ -199,8 +199,8 @@ public class BlockController extends BlockContainer implements INetworked {
                 if (!world.isRemote) {
                     te.toggleSync();
                     if (te.getClientAutoSync()) {
-                        player.addChatMessage(new ChatComponentText("Client Auto Sync Enabled"));
-                    } else player.addChatMessage(new ChatComponentText("Client Auto Sync Disabled"));
+                        player.addChatMessage(new ChatComponentText("Client Auto Sync enabled for all drawers"));
+                    } else player.addChatMessage(new ChatComponentText("Client Auto Sync disabled for all drawers"));
                 }
             }
             if (!world.isRemote) {

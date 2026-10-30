@@ -33,7 +33,9 @@ public interface IStorageProvider {
 
     public boolean isRedstone(int slot);
 
-    public void markAmountDirty(int slot, TileEntityController controller);
+    public void markAmountDirty(int slot, boolean syncClient);
 
-    public void markDirty(TileEntityController controller);
+    public void markDirty(boolean controller);
+
+    public void addControllerClientSyncList(TileEntityController controller);
 }

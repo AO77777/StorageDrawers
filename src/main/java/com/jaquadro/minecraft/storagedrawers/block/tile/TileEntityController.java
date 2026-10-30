@@ -103,12 +103,6 @@ public class TileEntityController extends TileEntity
     private final ItemHashMap drawerPrimaryLookup = new ItemHashMap();
 
     /**
-     * to prevent multiple controllers they are cleared when encountered during full update either directly or from
-     * another drawer linked to a different controller. This variable prevents multiple clears of the same controller
-     */
-    private final Set<BlockCoord> clearedControllers = new HashSet<BlockCoord>();
-
-    /**
      * if disableAutoSync is true drawers that need syncing to client will go into syncSet and sync only when loading,
      * doing inventory dump, toggling autosync or breaking controller
      */
@@ -473,13 +467,18 @@ public class TileEntityController extends TileEntity
      * in displayed item count and texture not automatically updating. This function adds to the set of coordinates that
      * need updating.
      */
+
+    public boolean getClientAutoSync() {
+        return enableClientAutoSync;
+    }
+
     public void addClientSyncList(int xcoord, int ycoord, int zcoord) {
 
         BlockCoord teCoord = new BlockCoord(xcoord, ycoord, zcoord);
         syncSet.add(teCoord);
     }
 
-    /** When drawer is interacted with sync with client */
+    /** When drawer is interacted with sync all connected drawers with client */
     public void syncClient() {
 
         for (BlockCoord element : syncSet) {
@@ -489,14 +488,24 @@ public class TileEntityController extends TileEntity
     }
 
     /** Set the controller not sync unless interacted with */
+    @Override
     public void toggleSync() {
+
         syncClient();
         enableClientAutoSync = !enableClientAutoSync;
+
+        for (int i = 0; i < drawerSlotList.size(); i++) {
+            for (IDrawerGroup drawer : storage.values()) {
+                if (drawer != null) {
+                    drawer.setSync(enableClientAutoSync);
+                }
+            }
+        }
     }
 
-    /** Get autosync configuration */
-    public boolean getClientAutoSync() {
-        return enableClientAutoSync;
+    @Override
+    public void setSync(boolean sync) {
+        enableClientAutoSync = sync;
     }
 
     /**
@@ -642,32 +651,39 @@ public class TileEntityController extends TileEntity
     /** Should be called when registering a new item with a drawer registered with this controller */
     public void setLookup(@NotNull ItemStack itemPrototype, int drawerSlot, List<ItemStack> oreDictMatches) {
 
-        drawerPrimaryLookup.register(
-                itemPrototype.getItem(),
-                itemPrototype.getItemDamage(),
-                drawerSlotList.get(drawerSlot),
-                oreDictMatches);
+        if (drawerSlot < drawerSlotList.size()) {
 
-        schedulePriorityUpdate();
+            drawerPrimaryLookup.register(
+                    itemPrototype.getItem(),
+                    itemPrototype.getItemDamage(),
+                    drawerSlotList.get(drawerSlot),
+                    oreDictMatches);
+
+            schedulePriorityUpdate();
+        }
     }
 
     /** Should be called when setting a stored item in a drawer registered with this controller to null */
     public void removeLookup(@NotNull ItemStack itemPrototype, int drawerSlot, List<ItemStack> oreDictMatches) {
 
-        drawerPrimaryLookup.remove(
-                itemPrototype.getItem(),
-                itemPrototype.getItemDamage(),
-                drawerSlotList.get(drawerSlot),
-                oreDictMatches);
+        if (drawerSlot < drawerSlotList.size()) {
 
-        // Ensure emptyDrawerSlot is set to the lowest priority empty priorityIndex (Should usually have lower index as
-        // previously had item so had a higher priority)
-        int emptyPriorityIndex = drawerSlotList.get(drawerSlot).priorityIndex;
-        if (emptyPriorityIndex != -1 && emptyPriorityIndex < emptyDrawerSlot) {
-            emptyDrawerSlot = emptyPriorityIndex;
+            drawerPrimaryLookup.remove(
+                    itemPrototype.getItem(),
+                    itemPrototype.getItemDamage(),
+                    drawerSlotList.get(drawerSlot),
+                    oreDictMatches);
+
+            // Ensure emptyDrawerSlot is set to the lowest priority empty priorityIndex (Should usually have lower index
+            // as
+            // previously had item so had a higher priority)
+            int emptyPriorityIndex = drawerSlotList.get(drawerSlot).priorityIndex;
+            if (emptyPriorityIndex != -1 && emptyPriorityIndex < emptyDrawerSlot) {
+                emptyDrawerSlot = emptyPriorityIndex;
+            }
+
+            schedulePriorityUpdate();
         }
-
-        schedulePriorityUpdate();
     }
 
     private @Nullable IDrawerGroup getGroupForDrawerSlot(int drawerSlot) {
@@ -816,8 +832,10 @@ public class TileEntityController extends TileEntity
         boolean synced = false;
 
         for (IDrawerGroup drawerGroup : storage.values()) {
-            if (drawerGroup != null && drawerGroup.getDrawerInventory() != null)
-                synced |= drawerGroup.markDirtyIfNeeded();
+            if (drawerGroup != null && drawerGroup.getDrawerInventory() != null && drawerGroup.markDirtyIfNeeded()) {
+                synced = true;
+                break;
+            }
         }
 
         if (synced) super.markDirty();

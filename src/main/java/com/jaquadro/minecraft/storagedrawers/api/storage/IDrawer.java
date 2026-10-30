@@ -15,6 +15,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public interface IDrawer {
 
+    void setSync(boolean sync);
+
     List<ItemStack> getOreDictMatches();
 
     TileEntityController getController();

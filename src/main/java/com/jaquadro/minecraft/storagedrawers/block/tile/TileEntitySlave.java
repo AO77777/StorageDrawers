@@ -367,14 +367,21 @@ public class TileEntitySlave extends TileEntity implements IDrawerGroup, IPriori
         if (controllerCoord == null || controllerCoord.x() != sourceControllerX
                 || controllerCoord.y() != sourceControllerY
                 || controllerCoord.z() != sourceControllerZ) {
-
+            return;
         }
+
         if (nullController) {
             controllerCoord = null;
             controller = null;
             markDirty();
         }
     }
+
+    @Override
+    public void toggleSync() {}
+
+    @Override
+    public void setSync(boolean sync) {}
 
     public TileEntityController getController() {
         return controller;

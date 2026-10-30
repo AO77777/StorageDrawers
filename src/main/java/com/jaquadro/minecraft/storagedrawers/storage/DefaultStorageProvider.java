@@ -93,14 +93,11 @@ public class DefaultStorageProvider implements IStorageProvider {
     }
 
     @Override
-    public void markAmountDirty(int slot, TileEntityController controller) {
+    public void markAmountDirty(int slot, boolean syncClient) {
+
         if (tile.getWorldObj().isRemote) return;
 
-        if (controller != null && !controller.isInvalid() && !controller.getClientAutoSync()) {
-            controller.addClientSyncList(tile.xCoord, tile.yCoord, tile.zCoord);
-        } else {
-
-            tile.getWorldObj().markBlockForUpdate(tile.xCoord, tile.yCoord, tile.zCoord);
+        if (syncClient) {
 
             int count = group.getDrawer(slot).getStoredItemCount();
             IMessage message = new CountUpdateMessage(tile.xCoord, tile.yCoord, tile.zCoord, slot, count);
@@ -123,14 +120,18 @@ public class DefaultStorageProvider implements IStorageProvider {
     }
 
     @Override
-    public void markDirty(TileEntityController controller) {
+    public void markDirty(boolean syncClient) {
+
         if (tile.getWorldObj().isRemote) return;
 
-        if (controller != null && !controller.isInvalid() && !controller.getClientAutoSync()) {
-            controller.addClientSyncList(tile.xCoord, tile.yCoord, tile.zCoord);
-        } else {
+        if (syncClient) {
             tile.getWorldObj().markBlockForUpdate(tile.xCoord, tile.yCoord, tile.zCoord);
         }
         tile.getWorldObj().markTileEntityChunkModified(tile.xCoord, tile.yCoord, tile.zCoord, tile);
+    }
+
+    @Override
+    public void addControllerClientSyncList(TileEntityController controller) {
+        controller.addClientSyncList(tile.xCoord, tile.yCoord, tile.zCoord);
     }
 }

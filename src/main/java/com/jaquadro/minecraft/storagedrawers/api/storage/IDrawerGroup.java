@@ -107,6 +107,16 @@ public interface IDrawerGroup {
             boolean nullController);
 
     /**
+     * Toogle client sync for this drawer entity
+     */
+    void toggleSync();
+
+    /**
+     * Set client sync for this drawer entity
+     */
+    void setSync(boolean sync);
+
+    /**
      * Gets the number of drawers contained within this group.
      */
     int getDrawerCount();

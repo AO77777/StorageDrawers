@@ -462,8 +462,8 @@ public class TileEntityController extends TileEntity
     }
 
     /**
-     * Drawers can be set such that any drawers registered do not sync as soon as an item is inserted/extracted
-     * (unless manually inserting). Controller can be shift-clicked so that any linked drawers to are set to sync or not
+     * Drawers can be set such that any drawers registered do not sync as soon as an item is inserted/extracted (unless
+     * manually inserting). Controller can be shift-clicked so that any linked drawers to are set to sync or not
      */
 
     public boolean getClientAutoSync() {
@@ -507,8 +507,8 @@ public class TileEntityController extends TileEntity
     }
 
     /**
-     * Clear storage and drawer variables referring to this controller and the controller if nullControllerCoord is set (prevents markdirty
-     * being set upon loading)
+     * Clear storage and drawer variables referring to this controller and the controller if nullControllerCoord is set
+     * (prevents markdirty being set upon loading)
      */
     public void clearStorage(boolean nullControllerCoord) {
 

@@ -115,8 +115,7 @@ public abstract class TileEntityDrawers extends BaseTileEntity
 
         if (controllerCoord == null || controllerCoord.x() != sourceControllerX
                 || controllerCoord.y() != sourceControllerY
-                || controllerCoord.z() != sourceControllerZ)
-        {
+                || controllerCoord.z() != sourceControllerZ) {
             controllerCoord = new BlockCoord(sourceControllerX, sourceControllerY, sourceControllerZ);
             markDirty();
         }

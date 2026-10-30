@@ -115,7 +115,8 @@ public abstract class TileEntityDrawers extends BaseTileEntity
 
         if (controllerCoord == null || controllerCoord.x() != sourceControllerX
                 || controllerCoord.y() != sourceControllerY
-                || controllerCoord.z() != sourceControllerZ) {
+                || controllerCoord.z() != sourceControllerZ)
+        {
             controllerCoord = new BlockCoord(sourceControllerX, sourceControllerY, sourceControllerZ);
             markDirty();
         }
@@ -532,7 +533,7 @@ public abstract class TileEntityDrawers extends BaseTileEntity
         ItemStack item = takeItemsFromSlot(slot, amount, player, isHoldingClick);
 
         if (!getClientAutoSync()) {
-            if (controller != null) {
+            if (controller != null && !controller.isInvalid()) {
                 controller.addClientSyncList(xCoord, yCoord, zCoord);
                 controller.syncClient();
             } else {
@@ -877,7 +878,7 @@ public abstract class TileEntityDrawers extends BaseTileEntity
         if (drawer != null) {
 
             if (!getClientAutoSync()) {
-                if (controller != null) {
+                if (controller != null && !controller.isInvalid()) {
                     controller.addClientSyncList(xCoord, yCoord, zCoord);
                     controller.syncClient();
                 } else {

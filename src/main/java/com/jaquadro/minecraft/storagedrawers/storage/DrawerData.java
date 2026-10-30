@@ -155,7 +155,7 @@ public class DrawerData extends BaseDrawerData implements IVoidable, IShroudable
                 storageProvider.markDirty(syncClient);
             }
 
-            if (controller != null && !syncClient) {
+            if (controller != null && !controller.isInvalid() && !syncClient) {
                 storageProvider.addControllerClientSyncList(controller);
             }
         }

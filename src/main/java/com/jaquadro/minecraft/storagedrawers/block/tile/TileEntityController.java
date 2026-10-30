@@ -462,10 +462,8 @@ public class TileEntityController extends TileEntity
     }
 
     /**
-     * Controller can be set such that any drawers registered do not sync as soon as an item is inserted/extracted
-     * (unless manually inserting) as these calls are expensive when inserting a large quantity of ItemStacks but result
-     * in displayed item count and texture not automatically updating. This function adds to the set of coordinates that
-     * need updating.
+     * Drawers can be set such that any drawers registered do not sync as soon as an item is inserted/extracted
+     * (unless manually inserting). Controller can be shift-clicked so that any linked drawers to are set to sync or not
      */
 
     public boolean getClientAutoSync() {
@@ -487,7 +485,7 @@ public class TileEntityController extends TileEntity
         syncSet.clear();
     }
 
-    /** Set the controller not sync unless interacted with */
+    /** Set all drawers to sync or not based on enableClientAutoSync */
     @Override
     public void toggleSync() {
 
@@ -509,7 +507,7 @@ public class TileEntityController extends TileEntity
     }
 
     /**
-     * Clear storage and drawer variables referring to this controller if nullControllerCoord is set (prevents markdirty
+     * Clear storage and drawer variables referring to this controller and the controller if nullControllerCoord is set (prevents markdirty
      * being set upon loading)
      */
     public void clearStorage(boolean nullControllerCoord) {

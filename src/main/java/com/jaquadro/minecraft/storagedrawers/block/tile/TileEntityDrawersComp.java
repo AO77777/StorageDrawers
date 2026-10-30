@@ -558,7 +558,7 @@ public class TileEntityDrawersComp extends TileEntityDrawers {
                 if (worldObj != null && !worldObj.isRemote) {
 
                     if (!getClientAutoSync()) {
-                        if (controller != null) {
+                        if (controller != null && !controller.isInvalid()) {
                             controller.addClientSyncList(xCoord, yCoord, zCoord);
                         }
                     } else {
@@ -576,7 +576,7 @@ public class TileEntityDrawersComp extends TileEntityDrawers {
                 if (worldObj != null && !worldObj.isRemote) {
 
                     if (!getClientAutoSync()) {
-                        if (controller != null) {
+                        if (controller != null && !controller.isInvalid()) {
                             controller.addClientSyncList(xCoord, yCoord, zCoord);
                         }
                     } else {
@@ -616,7 +616,7 @@ public class TileEntityDrawersComp extends TileEntityDrawers {
                 if (pooledCount != 0 || TileEntityDrawersComp.this.isLocked(LockAttribute.LOCK_POPULATED)) {
 
                     if (!getClientAutoSync()) {
-                        if (controller != null) {
+                        if (controller != null && !controller.isInvalid()) {
                             controller.addClientSyncList(xCoord, yCoord, zCoord);
                         }
                     } else {
@@ -631,7 +631,7 @@ public class TileEntityDrawersComp extends TileEntityDrawers {
                     if (worldObj != null && !worldObj.isRemote) {
 
                         if (!getClientAutoSync()) {
-                            if (controller != null) {
+                            if (controller != null && !controller.isInvalid()) {
                                 controller.addClientSyncList(xCoord, yCoord, zCoord);
                             }
                         } else {
